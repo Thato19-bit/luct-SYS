@@ -1,0 +1,1 @@
+import React from 'react'; export default function Lectures(){ return <div><h3>Lectures</h3><p>Manage lectures here (placeholder)</p></div> }

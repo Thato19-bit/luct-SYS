@@ -1,0 +1,1 @@
+import React, {useState} from 'react'; export default function Rating(){ const [r,setR]=useState(5); return <div><h4>Rating</h4><p>Give rating: <input type='range' min='1' max='5' value={r} onChange={e=>setR(e.target.value)} /> {r}</p></div> }

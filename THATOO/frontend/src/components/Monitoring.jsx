@@ -1,0 +1,1 @@
+import React from 'react'; export default function Monitoring(){ return <div><h4>Monitoring</h4><p>Placeholder monitoring data.</p></div> }

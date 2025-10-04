@@ -1,0 +1,1 @@
+import React from 'react'; import ReportForm from './ReportForm'; export default function ReportsPage(){ return <div><h3>Reports</h3><ReportForm/></div> }
