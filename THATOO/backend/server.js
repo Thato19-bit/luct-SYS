@@ -6,13 +6,17 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 
 const app = express();
+const PORT = process.env.PORT || 5000;
+const JWT_SECRET = process.env.JWT_SECRET || "supersecretkey";
+const dbPath = path.join(__dirname, "faculty.db");
+
 app.use(cors());
 app.use(express.json());
 
-const dbPath = path.join(__dirname, "faculty.db");
-const JWT_SECRET = process.env.JWT_SECRET || "supersecretkey";
-
-function openDb() { return new sqlite3.Database(dbPath); }
+// --- OPEN DATABASE ---
+function openDb() {
+  return new sqlite3.Database(dbPath);
+}
 
 // --- AUTH ROUTES ---
 app.post("/api/auth/register", async (req, res) => {
@@ -24,10 +28,13 @@ app.post("/api/auth/register", async (req, res) => {
   const hashed = await bcrypt.hash(password, 10);
 
   db.run(
-    "INSERT INTO users (name,password, role) VALUES (?, ?, ?, ?)",
+    "INSERT INTO users (name, password, role) VALUES (?, ?, ?)",
     [name, hashed, role],
     function (err) {
-      if (err) { db.close(); return res.status(400).json({ error: err.message }); }
+      if (err) {
+        db.close();
+        return res.status(400).json({ error: err.message });
+      }
       const user = { id: this.lastID, name, role };
       const token = jwt.sign(user, JWT_SECRET, { expiresIn: "12h" });
       db.close();
@@ -40,19 +47,29 @@ app.post("/api/auth/login", (req, res) => {
   const { name, password } = req.body;
   const db = openDb();
   db.get("SELECT * FROM users WHERE name = ?", [name], async (err, row) => {
-    if (err) { db.close(); return res.status(500).json({ error: err.message }); }
-    if (!row) { db.close(); return res.status(401).json({ error: "Invalid credentials" }); }
+    if (err) {
+      db.close();
+      return res.status(500).json({ error: err.message });
+    }
+    if (!row) {
+      db.close();
+      return res.status(401).json({ error: "Invalid credentials" });
+    }
 
     const match = await bcrypt.compare(password, row.password);
-    if (!match) { db.close(); return res.status(401).json({ error: "Invalid credentials" }); }
+    if (!match) {
+      db.close();
+      return res.status(401).json({ error: "Invalid credentials" });
+    }
 
-    const user = { id: row.id, name: row.name,role: row.role };
+    const user = { id: row.id, name: row.name, role: row.role };
     const token = jwt.sign(user, JWT_SECRET, { expiresIn: "12h" });
     db.close();
     res.json({ user, token });
   });
 });
 
+// --- AUTH MIDDLEWARE ---
 function authMiddleware(req, res, next) {
   const auth = req.headers.authorization;
   if (!auth) return res.status(401).json({ error: "No token" });
@@ -88,25 +105,29 @@ let classes = [
     updated_at: new Date().toISOString(),
   },
   {
-    id: 1,
-    name: "MC1 - Maths ",
-    course_id: 3,
-    course_name: "calculus",
-    total_registered: 30,
+    id: 2,
+    name: "MC1 - Calculus I",
+    course_id: 4,
+    course_name: "Maths",
+    total_registered: 25,
     active: true,
     created_by: "Admin",
     updated_at: new Date().toISOString(),
   },
 ];
 
+// --- COURSE ROUTES ---
 app.get("/api/courses", (req, res) => res.json(courses));
+
 app.post("/api/courses", authMiddleware, (req, res) => {
   const newCourse = { id: Date.now(), name: req.body.name };
   courses.push(newCourse);
   res.json(newCourse);
 });
 
+// --- CLASS ROUTES ---
 app.get("/api/classes", (req, res) => res.json(classes));
+
 app.post("/api/classes", authMiddleware, (req, res) => {
   const course = courses.find((c) => c.id == req.body.course_id);
   if (!course) return res.status(400).json({ error: "Invalid course_id" });
@@ -125,4 +146,10 @@ app.post("/api/classes", authMiddleware, (req, res) => {
   res.json(newClass);
 });
 
-app.listen(5000, () => console.log("✅ API running at http://localhost:5000"));
+// --- HEALTH CHECK ---
+app.get("/api/health", (req, res) => res.json({ status: "ok" }));
+
+// --- START SERVER ---
+app.listen(PORT, () =>
+  console.log(`✅ Server running on http://localhost:${PORT}`)
+);
