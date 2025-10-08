@@ -2,15 +2,12 @@
   "version": 2,
   "builds": [
     {
-      "src": "THATOO/frontend/package.json",
+      "src": "frontend/package.json",
       "use": "@vercel/static-build",
-      "config": { "distDir": "THATOO/frontend/dist" }
+      "config": { "distDir": "frontend/dist" }
     }
   ],
   "routes": [
     { "src": "/(.*)", "dest": "/index.html" }
-  ],
-  "buildCommand": "cd THATOO/frontend && npm ci && npm run build",
-  "installCommand": "cd THATOO/frontend && npm ci",
-  "outputDirectory": "THATOO/frontend/dist"
+  ]
 }
