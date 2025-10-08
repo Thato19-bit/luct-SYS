@@ -2,25 +2,15 @@
   "version": 2,
   "builds": [
     {
-      "src": "frontend/package.json",
+      "src": "THATOO/frontend/package.json",
       "use": "@vercel/static-build",
-      "config": {
-        "distDir": "frontend/dist"
-      }
-    },
-    {
-      "src": "backend/server.js",
-      "use": "@vercel/node"
+      "config": { "distDir": "THATOO/frontend/dist" }
     }
   ],
   "routes": [
-    {
-      "src": "/api/(.*)",
-      "dest": "backend/server.js"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "frontend/dist/index.html"
-    }
-  ]
+    { "src": "/(.*)", "dest": "/index.html" }
+  ],
+  "buildCommand": "cd THATOO/frontend && npm ci && npm run build",
+  "installCommand": "cd THATOO/frontend && npm ci",
+  "outputDirectory": "THATOO/frontend/dist"
 }

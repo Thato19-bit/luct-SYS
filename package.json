@@ -1,8 +1,0 @@
-{
-  "name": "thatoo-root",
-  "private": true,
-  "workspaces": [
-    "frontend",
-    "backend"
-  ]
-}
